@@ -1,0 +1,9 @@
+<div>
+  <app-navbar [sidebarReduced]="isSidebarCollapsed"></app-navbar>
+  <app-sidebar (sidebarToggled)="toggleSidebarState($event)" (ajouterAssistantEvent)="ouvrirAssistants()"
+    [assistants]="assistantsSelectionnes" (assistantSupprimeEvent)="onAssistantSupprime($event)">
+  </app-sidebar>
+  <app-main-content [collapsed]="isSidebarCollapsed" [afficherAssistants]="afficherAssistants"
+    (fermerAssistantsEvent)="fermerAssistants()" (assistantAjouteEvent)="onAssistantAjoute($event)">
+  </app-main-content>
+</div>

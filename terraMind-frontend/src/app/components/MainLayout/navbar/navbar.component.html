@@ -1,0 +1,75 @@
+<div class="avatar-container"
+     [class.has-scroll]="hasScroll"
+     [class.sidebar-reduced]="sidebarReduced">
+  <div class="avatar" (click)="toggleMenu()">M</div>
+  <div class="menu" *ngIf="menuOpen">
+    <p style="font-weight: bold;">{{ name }}</p>
+    <button class="menu-item" (click)=" openSettings()">
+      <i class="fas fa-cog icon"></i>
+      Paramètres
+    </button>
+    <button class="menu-item" (click)="logout()">
+      <i class="fas fa-sign-out-alt icon" style="color: #3CB371;"></i>
+      Se Déconnecter
+    </button>
+  </div>
+</div>
+<!-- Modal Paramètres -->
+<div class="modal-overlay" *ngIf="showSettingsModal">
+  <div class="settings-modal">
+    <div class="header">
+      <h3>Profile</h3>
+      <button class="close-btn" (click)="closeSettingsModal()">×</button>
+    </div>
+    <div class="content">
+      <p><strong>nom:</strong> {{ name }}</p>
+      <p><strong>nom d'utilisateur:</strong> {{userName}}</p>
+      <p><strong>E-mail :</strong> {{ userEmail }}</p>
+      <hr>
+      <button class="danger-btn" (click)="openChangePasswordModal()"
+        style="background: linear-gradient(to bottom, #A8EB97, #34A853);">
+        Changer mot de passe
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Changer mot de passe -->
+<div class="modal-overlay" *ngIf="showChangePasswordModal">
+  <div class="settings-modal">
+    <div class="header">
+      <h3>Changer le mot de passe</h3>
+      <button class="close-btn" (click)="closeChangePasswordModal()">×</button>
+    </div>
+
+    <div class="content">
+      <div class="password-fields">
+        <!-- Ancien mot de passe -->
+        <div class="password-input">
+          <input [type]="showOldPassword ? 'text' : 'password'" [(ngModel)]="oldPassword"
+            placeholder="Ancien mot de passe" />
+          <i class="fa-solid" [ngClass]="showOldPassword ? 'fa-eye-slash' : 'fa-eye'"
+            (click)="showOldPassword = !showOldPassword"></i>
+        </div>
+        <!-- Nouveau mot de passe -->
+        <div class="password-input">
+          <input [type]="showNewPassword ? 'text' : 'password'" [(ngModel)]="newPassword"
+            placeholder="Nouveau mot de passe" />
+          <i class="fa-solid" [ngClass]="showNewPassword ? 'fa-eye-slash' : 'fa-eye'"
+            (click)="showNewPassword = !showNewPassword"></i>
+        </div>
+        <!-- Confirmer mot de passe -->
+        <div class="password-input">
+          <input [type]="showConfirmPassword ? 'text' : 'password'" [(ngModel)]="confirmPassword"
+            placeholder="Confirmer le mot de passe" />
+          <i class="fa-solid" [ngClass]="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'"
+            (click)="showConfirmPassword = !showConfirmPassword"></i>
+        </div>
+      </div>
+      <button class="danger-btn" (click)="changerMotDePasse()"
+        style="background: linear-gradient(to bottom, #A8EB97, #34A853);">
+        Enregistrer
+      </button>
+    </div>
+  </div>
+</div>

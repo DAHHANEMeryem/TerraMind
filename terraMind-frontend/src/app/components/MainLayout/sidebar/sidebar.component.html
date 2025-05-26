@@ -1,0 +1,90 @@
+<div class="sidebar" [ngClass]="{ 'collapsed': isCollapsed }">
+    <!-- Toujours visibles -->
+    <div class="sidebar-header">
+        <img src="assets/images/logo2.png" class="logo" style="width: 140px;height: 140px;" *ngIf="sidebarState" />
+        <img src="assets/images/logo1.png" class="logo" style=" width: 60px;height: 60px;" *ngIf="!sidebarState" />
+        <button class="toggle-sidebar" (click)="toggleSidebar()">
+            <img src="assets/images/closeSidebar.png" [ngClass]="{ 'rotated': !sidebarState  }" />
+        </button>
+        <button class="new-chat" (click)="newChat()" *ngIf="!sidebarState">
+            <i class="fas fa-comment-medical"></i>
+            <span *ngIf="sidebarState">Nouveau chat</span>
+        </button>
+        <button class="search" (click)="toggleSearch()" *ngIf="!sidebarState">
+            <i class="fas fa-search"></i>
+        </button>
+    </div>
+
+    <div class="search-container" *ngIf="isSearchOpen">
+        <div class="search-header">
+            <input type="text" placeholder="Rechercher un chat..." [(ngModel)]="searchQuery">
+            <button class="close-btn" (click)="toggleSearch()">✖</button>
+        </div>
+        <div class="history-title2" *ngIf="filteredHistory().length > 0">
+            30 jours précédents
+        </div>
+        <ul class="search-results">
+            <li *ngFor="let chat of filteredHistory()" (click)="afficheChat(chat.chatId)">
+                <i class="fas fa-comment"></i> {{ chat.title }}
+            </li>
+        </ul>
+        <p *ngIf="filteredHistory().length === 0" class="no-results"><i class="fas fa-search"></i> Aucun historique</p>
+    </div>
+    <div class="sidebar-content" *ngIf="sidebarState ">
+        <p class="section-title">Historique </p>
+        <div *ngIf="historyItems.length === 0" class="empty-message">
+            <i class="fas fa-history"></i> Aucun historique
+        </div>
+        <ul class="history-list" *ngIf="historyItems.length > 0">
+            <li *ngFor="let item of historyItems" class="history-item" [class.active]="item.isActive"
+                (click)="afficheChat(item.chatId)">
+                <!-- Affiche un input si en mode édition, sinon le texte du titre -->
+                <input *ngIf="item.isEditing" [(ngModel)]="item.newTitle" (blur)="updateTitle(item)"
+                    (keyup.enter)="updateTitle(item)" type="text" class="history-title-input" />
+                <span *ngIf="!item.isEditing" (click)="enableEdit(item)">{{ item.title }}</span>
+
+                <div class="options-menu">
+                    <span class="options" (click)="toggleDropdown(item)" [class.active]="item.isActive">...</span>
+                    <div class="dropdown" *ngIf="item.showDropdown"
+                        [ngStyle]="{'top': item.dropdownTop, 'left': item.dropdownLeft}">
+                        <ul>
+                            <li style="display: flex; align-items: center;" (click)="enableEdit(item)">
+                                <i class="fas fa-edit" style="margin-right: 8px;"></i> Renommer
+                            </li>
+                            <li style="color: red; display: flex; align-items: center;"
+                                (click)="confirmDelete(item, $event)">
+                                <i class="fas fa-trash-alt" style="margin-right: 8px;"></i> Supprimer
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <p class="section-title">
+            Assistants
+            <button class="add-icon" (click)="afficherAssistant()">
+                <i class="fas fa-plus"></i>
+            </button>
+        </p>
+
+        <div *ngIf="assistants.length === 0" class="empty-message ">
+            <i class="fas fa-robot"></i> Aucun assistant trouvé
+        </div>
+        <ul class="assistants-list" *ngIf="assistants.length > 0">
+            <li *ngFor="let assistant of assistants" (click)="saveAssistantNameToLocalStorage(assistant.nom)" [ngStyle]="{
+        'background-color': selectedAssistant === assistant.nom ? '#ecf0f1' : '',
+        'border-radius': selectedAssistant === assistant.nom ? '8px' : ''
+      }" class="assistant-item">
+
+                <img [src]="assistant.image" [alt]="assistant.nom" class="assistant-img" />
+                <p>{{ assistant.nom }}</p>
+
+                <!-- Icône "moins", affichée uniquement au hover -->
+                <button class="remove-icon" (click)="supprimerAssistant(assistant, $event)">
+                    <i class="fas fa-minus"></i>
+                </button>
+            </li>
+        </ul>
+
+    </div>
+</div>

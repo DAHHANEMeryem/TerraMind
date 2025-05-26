@@ -1,0 +1,230 @@
+<app-navbar-admin></app-navbar-admin>
+<div class="main-container">
+    <div class="table-wrapper">
+        <!-- affiche la table utilisateurs -->
+        <div *ngIf="currentView === 'users'">
+            <!-- Barre d'actions, recherche, ajout ... -->
+            <h2 style="margin-top: 40px; margin-left: 40px  ;margin-bottom: 40px;background: linear-gradient(to right, #90EE90, #228B22, #3CB371);
+              -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Liste des utilisateurs</h2>
+            <div class="table-actions">
+
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" placeholder="Rechercher..." [(ngModel)]="searchUser" (input)="filterUsers()" />
+                </div>
+                <button class="btn-add" (click)="openModal()">Ajouter</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let user of paginatedUsers">
+                        <td>{{ user.nom }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.role }}</td>
+                        <td>
+                            <button class="btn-action edit" title="Modifier" (click)="openModal(user)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+
+                            <button class="btn-action delete" title="Supprimer" (click)="onDeleteUser(user)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+
+                            <button class="btn-action block" (click)="blockOrUnblockUser(user)">
+                                <i class="fa"
+                                    [ngClass]="user.isBlocked ? 'fa-lock text-danger' : 'fa-unlock text-success'"></i>
+                            </button>
+
+                            <button *ngIf="user.role !== 'ADMIN'" class="btn-action view" title="Voir"
+                                (click)="viewHistory(user)">
+                                <i class="fas fa-eye text-primary"></i>
+                            </button>
+                            <button *ngIf="user.role !== 'ADMIN'" class="btn-action" title="Gérer les assistants"
+                                (click)="openAssistantModal(user)">
+                                <i class="fas fa-user-cog text-warning"></i>
+                            </button>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="pagination">
+                <button (click)="currentUserPage = currentUserPage - 1" [disabled]="currentUserPage === 1">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <span>Page {{ currentUserPage }} / {{ totalPages }}</span>
+                <button (click)="currentUserPage = currentUserPage + 1" [disabled]="currentUserPage === totalPages">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+
+        </div>
+
+        <!--  affiche l'historique -->
+        <div *ngIf="currentView === 'histories'">
+            <h2 style="margin-top: 40px; margin-left: 100px  ;margin-bottom: 40px; background: linear-gradient(to right, #90EE90, #228B22, #3CB371);
+         -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Liste des historiques</h2>
+            <div class="search-container" style="margin-bottom: 20px; margin-left: 340px;">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" placeholder="Rechercher..." [(ngModel)]="searchHistory"
+                    (input)="filterHistories()" />
+            </div>
+
+            <table *ngIf="histories.length > 0; else noHistory" style="width: 50%;">
+                <thead>
+                    <tr>
+                        <th>Nom assistant</th>
+                        <th>Title</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let hist of paginatedHistories">
+                        <td>{{ hist.assistant_name }}</td>
+
+                        <td style="cursor: pointer; color: blue;" (click)="loadChatDetails(hist)">
+                            {{ hist.title }}
+                        </td>
+
+                    </tr>
+
+                </tbody>
+            </table>
+
+            <div class="pagination">
+                <button (click)="currentHistoryPage = currentHistoryPage - 1" [disabled]="currentHistoryPage === 1">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <span>Page {{ currentHistoryPage }} / {{ totalHistoryPages }}</span>
+                <button (click)="currentHistoryPage = currentHistoryPage + 1"
+                    [disabled]="currentHistoryPage === totalPages">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <!-- Template affiché si histories est vide -->
+            <ng-template #noHistory>
+                <table style="width: 50%;">
+                    <thead>
+                        <tr>
+                            <th>Nom assistant</th>
+                            <th>Title</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="2">
+                                <p style="text-align:center; margin-top: 20px;">Aucun historique</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </ng-template>
+            <button class="close-button" (click)="back()">&#x2715;</button>
+        </div>
+
+        <!-- Zone des détails -->
+   <div *ngIf="currentView === 'details'" class="messages-container"> 
+  <ul class="chat-list">
+    <li *ngFor="let msg of selectedChatMessages" class="chat-item">
+      <div *ngIf="msg.query" class="user-msg">{{ msg.query }}</div>
+      <div *ngIf="msg.result" class="bot-msg" [innerHTML]="msg.result"></div>
+    </li>
+  </ul>
+  <button class="close-button" (click)="back()">&#x2715;</button>
+</div>
+
+    </div>
+</div>
+
+
+
+
+
+<!-- Modal -->
+<div class="modal" [class.show]="isModalOpen">
+    <div class="modal-content">
+        <h3>{{ editingUser ? 'Modifier' : 'Ajouter' }} un utilisateur</h3>
+        <!-- Messages de feedback -->
+        <div *ngIf="successMessage" class="alert success">
+            {{ successMessage }}
+        </div>
+        <div *ngIf="registerError" class="alert error">
+            {{ registerError }}
+        </div>
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+            <label>Nom :</label>
+            <input type="text" formControlName="nom" required />
+
+            <label>Nom utilisateur :</label>
+            <input type="text" formControlName="nom_utilisateur" required />
+
+            <label>Email :</label>
+            <input type="email" formControlName="email" required />
+
+            <label>Rôle :</label>
+            <select formControlName="role" required>
+                <option value="" disabled>Choisir un rôle</option>
+                <option *ngFor="let role of roles" [value]="role.name">{{ role.name }}</option>
+            </select>
+
+            <!-- Mot de passe avec œil -->
+            <label *ngIf="!editingUser">Mot de passe :</label>
+            <div *ngIf="!editingUser" class="input-with-icon">
+                <input [type]="showPassword ? 'text' : 'password'" formControlName="mot_de_passe" required
+                    minlength="6" />
+                <i class="fa" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+                    (click)="showPassword = !showPassword"></i>
+            </div>
+
+            <!-- Confirmer mot de passe avec œil -->
+            <label *ngIf="!editingUser">Confirmer mot de passe :</label>
+            <div *ngIf="!editingUser" class="input-with-icon">
+                <input [type]="showConfirmPassword ? 'text' : 'password'" formControlName="confirmer_mot_de_passe"
+                    required minlength="6" />
+                <i class="fa" [ngClass]="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'"
+                    (click)="showConfirmPassword = !showConfirmPassword"></i>
+            </div>
+
+            <div class="modal-buttons">
+                <button type="submit" [disabled]="registerForm.invalid" class="btn btn-primary">Enregistrer</button>
+                <button type="button" (click)="closeModal()" class="btn btn-secondary">Annuler</button>
+            </div>
+        </form>
+
+
+    </div>
+</div>
+
+
+
+<!-- Modal pour gérer les assistants -->
+<div class="modal" [class.show]="showAssistantModal">
+    <div class="modal-content" style="padding: 30px 50px;">
+        <span class="close" (click)="closeAssistantModal()">&times;</span>
+        <h5>Gérer les assistants de {{ selectedUser?.nom }}</h5>
+        <form style=" max-height: 300px;overflow-y: auto; margin-bottom: 20px;">
+            <div *ngFor="let assistant of assistants" style="margin-bottom: 12px;">
+                <label
+                    style=" gap: 70px; font-size: 15px; color: #34495e; display: inline-flex; white-space: nowrap;align-items: center;">
+                    {{ assistant.name }} - {{ assistant.domaine }}
+                </label>
+                <input type="checkbox" [checked]="selectedAssistants.includes(assistant.assistantId)"
+                    (change)="toggleAssistantSelection(assistant.assistantId)" />
+            </div>
+        </form>
+
+        <div style="text-align: right;">
+            <button (click)="saveAssistants()" style="background-color: #27ae60;border: none; color: white;padding: 10px 18px;
+                      border-radius: 5px;cursor: pointer;font-size: 16px;width: 120px;">Enregistrer</button>
+        </div>
+
+    </div>
+</div>
